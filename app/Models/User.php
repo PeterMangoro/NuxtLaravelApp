@@ -3,9 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -43,5 +44,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function scopeSearch(Builder $query, ?string $terms = null)
+    {
+        $term = '%' . preg_replace('/[^A-Za-z0-9]/', '', $terms) . '%';
+        return $this->when($terms, function ($query) use ($term) {
+            $query
+                ->where('name', 'like', $term)
+                ->orWhere('email', 'like', $term);
+        });
     }
 }
